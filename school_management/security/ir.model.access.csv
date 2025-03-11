@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_school_details_id,School Details Access,model_school_details,,1,1,1,1
+access_student_details_id,Student Details Access,school_management.model_student_details,,1,1,1,1
+access_books_book_user,books.book.user,model_books_book,,1,1,1,1
+acess_school_opening_wizard,school.opening.wizard,model_school_opening_wizard,,1,1,1,1

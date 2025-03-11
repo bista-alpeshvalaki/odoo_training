@@ -1,0 +1,1 @@
+from . import school_opening_wizard

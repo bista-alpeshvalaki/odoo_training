@@ -8,6 +8,7 @@
     "data": [
         'security/ir.model.access.csv',
         'data/ir_sequence.xml',
+        'data/ir_cron.xml',
         'views/res_patient_view.xml',
         'views/appointment_view.xml',
     ],

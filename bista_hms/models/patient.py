@@ -61,6 +61,7 @@ class ResPatient(models.Model):
             'res_model': 'hms.appointment',
             'view_id': view_id,
             'target': 'current',
+            'context': {'default_patient_id': self.id, 'child': True}
         }
 
 

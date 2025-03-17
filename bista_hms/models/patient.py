@@ -22,9 +22,17 @@ class ResPatient(models.Model):
     date_of_birth = fields.Date(string="Date of Birth", required=True)
     age = fields.Char(string="Age")
     previous_diseases = fields.Text(string="Previous Diseases")
-    phone = fields.Char(string="Phone")
+    phone = fields.Char(string="Phone", copy=False)
     email = fields.Char(string="Email")
-    mobile = fields.Char(string="Mobile")
+    mobile = fields.Char(string="Mobile", copy=False)
+    appointment_count = fields.Integer(compute="_compute_appointment_count", string="Appointment Count", store=True)
+    appointment_ids = fields.One2many("hms.appointment", "patient_id", string="Appointments", copy=False)
+
+    @api.depends('appointment_ids.patient_id')
+    def _compute_appointment_count(self):
+        for patient in self:
+            patient.appointment_count = self.env['hms.appointment'].search_count([('patient_id', '=', patient.id)])
+
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -47,24 +55,60 @@ class ResPatient(models.Model):
                 raise UserError("Phone number should be minimum 10 digits")
 
             # check no duplicate phone number
-            patient_ids = self.env['res.patient'].search_count([('phone', '=', record.phone),('id', '!=', record.id)])
-            if patient_ids:
-                raise UserError("Phone number already exists")
+            if record.phone:
+                patient_ids = self.env['res.patient'].search_count([('phone', '=', record.phone),('id', '!=', record.id)])
+                if patient_ids:
+                    raise UserError("Phone number already exists")
 
     def action_open_appointments(self):
-        view_id = self.env.ref('bista_hms.hms_appointment_form_view').id
+        # action = self.env['ir.actions.actions']._for_xml_id('bista_hms.hms_appointment_form_action')
+        # if self.appointment_count > 1:
+        #     action['domain'] = [('patient_id', '=', self.id)]
+        # elif self.appointment_count == 1:
+        #     form_view = [(self.env.ref('bista_hms.hms_appointment_form_view').id, 'form')]
+        #     if 'views' in action:
+        #         action['views'] = form_view + [(state, view) for state, view in action['views'] if view != 'form']
+        #     else:
+        #         action['views'] = form_view
+        # else:
+        #     action = {'type': 'ir.actions.act_window_close'}
+        #
+        # action['context'] = {'default_patient_id': self.id}
+        # return action
 
-        return {
+        form_view_id = self.env.ref('bista_hms.hms_appointment_form_view').id
+        list_view_id = self.env.ref('bista_hms.hms_appointment_tree_view').id
+
+        res = {
             'name': 'Appointments',
             'type': 'ir.actions.act_window',
             'view_mode': 'form',
             'res_model': 'hms.appointment',
-            'view_id': view_id,
             'target': 'current',
+            'view_id': form_view_id,
             'context': {'default_patient_id': self.id, 'child': True}
         }
 
+        if self.appointment_count >= 1:
+            res['view_mode'] = 'list,form'
+            res['views'] = [(list_view_id, 'list'), (form_view_id, 'form')]
+            res['domain'] = [('patient_id', '=', self.id)]
+            res['view_id'] = False
 
+        return res
+
+    # def copy(self, default=None):
+    #     if default is None:
+    #         default = {}
+    #     default['phone'] = False
+    #     return super(ResPatient, self).copy(default)
+    #
+
+    def update_phone_to_null(self):
+        active_ids = self._context.get('active_ids')
+        patient_ids = self.env['res.patient'].browse(active_ids)
+        patient_ids.write({'phone': False})
+        # patient_ids.phone = False
 
 
 

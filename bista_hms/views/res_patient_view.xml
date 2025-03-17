@@ -5,10 +5,17 @@
         <field name="model">res.patient</field>
         <field name="arch" type="xml">
             <form string="Patient">
+
                 <header>
-                    <button name="action_open_appointments" string="Appointments" type="object" />
+                    <button name="action_open_appointments" string="Appointments" type="object"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_appointments" type="object"
+                                icon="fa-calendar-check-o">
+                            <field name="appointment_count" string="Appointment" widget="statinfo"/>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1>
                             <field name="patient_code" readonly="1"/>
@@ -28,6 +35,18 @@
                             <field name="previous_diseases"/>
                         </group>
                     </group>
+                    <notebook>
+                        <page string="Appointments">
+                            <field name="appointment_ids">
+                                <list string="Appointments">
+                                    <field name="name" />
+                                    <field name="appointment_date"/>
+                                    <field name="appointment_reason"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
@@ -54,6 +73,16 @@
         <field name="name">Patients</field>
         <field name="res_model">res.patient</field>
         <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_update_phone" model="ir.actions.server">
+        <field name="name">Update Phone</field>
+        <field name="model_id" ref="bista_hms.model_res_patient"/>
+        <field name="state">code</field>
+<!--        <field name="groups_id"  eval="[(4, ref('base.group_user'))]"/>-->
+        <field name="code">model.update_phone_to_null()</field>
+        <field name="binding_model_id" ref="bista_hms.model_res_patient"/>
+        <field name="binding_view_types">list</field>
     </record>
 
     <menuitem id="menu_bista_hms" name="HMS"/>

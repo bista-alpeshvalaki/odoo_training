@@ -39,7 +39,7 @@
             <list string="Appointments">
                 <field name="name"/>
                 <field name="patient_id"/>
-                <field name="appointment_date"/>
+                <field name="appointment_date" force_save="1"/>
                 <field name="appointment_reason"/>
                 <field name="state"/>
             </list>

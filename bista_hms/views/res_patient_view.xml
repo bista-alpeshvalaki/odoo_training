@@ -8,6 +8,7 @@
 
                 <header>
                     <button name="action_open_appointments" string="Appointments" type="object"/>
+                    <button name="create_prescription" string="Create Prescription" type="object"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -15,6 +16,10 @@
                                 icon="fa-calendar-check-o">
                             <field name="appointment_count" string="Appointment" widget="statinfo"/>
                         </button>
+                        <button name="action_prescription" type="object" string="Prescription"
+                                icon="fa-pencil-square-o">
+                        </button>
+
                     </div>
                     <div class="oe_title">
                         <h1>

@@ -28,6 +28,13 @@ class ResPatient(models.Model):
     appointment_count = fields.Integer(compute="_compute_appointment_count", string="Appointment Count", store=True)
     appointment_ids = fields.One2many("hms.appointment", "patient_id", string="Appointments", copy=False)
 
+    def create_prescription(self):
+        vals = {'patient_id': self.id,
+                'date': fields.Datetime.now()}
+
+        new_id = self.env['hms.prescription'].create(vals)
+        new_id.state = 'confirm'
+
     @api.depends('appointment_ids.patient_id')
     def _compute_appointment_count(self):
         for patient in self:
@@ -111,4 +118,24 @@ class ResPatient(models.Model):
         # patient_ids.phone = False
 
 
+    def action_prescription(self):
+        form_view_id = self.env.ref('bista_hms.hms_prescription_form_view').id
+        list_view_id = self.env.ref('bista_hms.hms_prescription_list_view').id
+
+        res = {
+            'name': 'Prescription',
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'hms.prescription',
+            'target': 'current',
+            'view_id': form_view_id,
+            'context': {'default_patient_id': self.id,}
+        }
+
+        res['view_mode'] = 'list,form'
+        res['views'] = [(list_view_id, 'list'), (form_view_id, 'form')]
+        res['domain'] = [('patient_id', '=', self.id)]
+        res['view_id'] = False
+
+        return res
 

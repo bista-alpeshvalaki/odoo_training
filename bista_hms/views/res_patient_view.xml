@@ -32,6 +32,7 @@
                             <field name="phone"/>
                             <field name="email"/>
                             <field name="mobile"/>
+                            <field name="is_blocked"/>
                         </group>
                         <group>
                             <field name="blood_group"/>

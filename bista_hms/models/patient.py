@@ -27,6 +27,18 @@ class ResPatient(models.Model):
     mobile = fields.Char(string="Mobile", copy=False)
     appointment_count = fields.Integer(compute="_compute_appointment_count", string="Appointment Count", store=True)
     appointment_ids = fields.One2many("hms.appointment", "patient_id", string="Appointments", copy=False)
+    is_blocked = fields.Boolean(string="Blocked")
+
+    @api.depends('patient_code', 'name')
+    def _compute_display_name(self):
+        for rec in self:
+            if self._context.get('show_name'):
+                rec.display_name = rec.name
+            else:
+                if rec.phone:
+                    rec.display_name = f"[{rec.phone}] {rec.name}"
+                else:
+                    rec.display_name = rec.name
 
     def create_prescription(self):
         vals = {'patient_id': self.id,
@@ -48,12 +60,7 @@ class ResPatient(models.Model):
             record.patient_code = self.env['ir.sequence'].next_by_code('res.patient')
         return res
 
-    def write(self, vals):
-        res = super(ResPatient, self).write(vals)
-        # if 'phone' in vals:
-        #    if len(vals.get('phone')) < 10:
-        #        raise UserError("Phone number should be minimum 10 digits")
-        return res
+
 
     @api.constrains('phone')
     def check_phone(self):
@@ -93,7 +100,7 @@ class ResPatient(models.Model):
             'res_model': 'hms.appointment',
             'target': 'current',
             'view_id': form_view_id,
-            'context': {'default_patient_id': self.id, 'child': True}
+            'context': {'default_patient_id': self.id, 'extra_data': {}, }
         }
 
         if self.appointment_count >= 1:

@@ -13,3 +13,9 @@ class SaleOrder(models.Model):
         for order in self:
             order.amount_total = order.amount_total - order.discount_amount
         return res
+
+
+    def _prepare_invoice(self):
+        vals = super(SaleOrder, self)._prepare_invoice()
+        vals['lead_referral'] = self.lead_reference
+        return vals

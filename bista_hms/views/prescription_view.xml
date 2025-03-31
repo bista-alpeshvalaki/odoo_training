@@ -8,6 +8,8 @@
                 <header>
                     <button name="action_create_invoice" type="object" string="Create Invoice"
                            class="btn-primary"/>
+                    <button name="action_create_delivery" type="object" string="Create Delivery"
+                           class="btn-primary"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
                 </header>
                 <sheet>

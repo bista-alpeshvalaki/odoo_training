@@ -14,6 +14,51 @@ class HmsPrescription(models.Model):
                                          "prescription_id", string="Prescription Lines")
     total_amount = fields.Float(compute='_compute_total_amount', string="Total Amount")
     invoice_ids = fields.Many2many("account.move", string="Invoices")
+    picking_ids = fields.Many2many("stock.picking", string="Pickings")
+
+    def action_create_delivery(self):
+        """ stock.picking
+            stock.move
+            """
+
+        picking_vals = self.prepare_picking_vals()
+
+        picking_id = self.env['stock.picking'].create(picking_vals)
+
+        move_vals = self.prepare_move_vals(picking_id)
+
+        move_ids = self.env['stock.move'].create(move_vals)
+        print("picking_id==========", picking_id)
+
+        picking_id.action_confirm()
+        picking_id.action_assign()
+        picking_id.button_validate()
+
+    def prepare_picking_vals(self):
+        picking_type_id = self.env['stock.picking.type'].search([('code', '=', 'outgoing')], limit=1)
+        vals = {
+            'partner_id': 7,
+            'picking_type_id': picking_type_id.id,
+            'location_id': picking_type_id.default_location_src_id.id,
+            'location_dest_id': picking_type_id.default_location_dest_id.id,
+            # 'origin': self.name,
+        }
+        return vals
+
+    def prepare_move_vals(self, picking_id):
+        move_vals = []
+        for line in self.prescription_lines:
+            vals = {
+                'picking_type_id': picking_id.picking_type_id.id,
+                'location_id': picking_id.location_id.id,
+                'location_dest_id': picking_id.location_dest_id.id,
+                'picking_id': picking_id.id,
+                'product_id': line.product_id.id,
+                'name': line.product_id.display_name,
+                'product_uom_qty': line.quantity,
+            }
+            move_vals.append(vals)
+        return move_vals
 
     @api.depends('prescription_lines.total')
     def _compute_total_amount(self):

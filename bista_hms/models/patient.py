@@ -29,6 +29,24 @@ class ResPatient(models.Model):
     appointment_ids = fields.One2many("hms.appointment", "patient_id", string="Appointments", copy=False)
     is_blocked = fields.Boolean(string="Blocked")
 
+    @api.model
+    def name_search(self, name='', args=None, operator='ilike', limit=100):
+        if not args:
+            args = []
+        if name:
+            if self._context.get('search_mobile'):
+                args = ['|',('mobile', operator, name),('name', operator, name)]
+            else:
+                return super().name_search(name, args, operator=operator, limit=limit)
+        patient_ids = self.search_fetch(args, ['phone'], limit=limit)
+        return [(patient_id.id, patient_id.display_name) for patient_id in patient_ids.sudo()]
+
+    # @api.model
+    # def search_fetch(self, domain, field_names, offset=0, limit=None, order=None):
+    #     res = super(ResPatient, self).search_fetch(domain, field_names, offset=offset, limit=limit, order=order)
+    #     print('res=========', res)
+    #     return res
+
     @api.depends('patient_code', 'name')
     def _compute_display_name(self):
         for rec in self:

@@ -16,6 +16,13 @@ class HmsPrescription(models.Model):
     invoice_ids = fields.Many2many("account.move", string="Invoices")
     picking_ids = fields.Many2many("stock.picking", string="Pickings")
 
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        res['date'] = fields.Date.context_today(self)
+        res['patient_id'] = self._context.get('patient_id')
+        return res
+
     def action_create_delivery(self):
         """ stock.picking
             stock.move
@@ -31,8 +38,12 @@ class HmsPrescription(models.Model):
         print("picking_id==========", picking_id)
 
         picking_id.action_confirm()
+
+        # partner_id = picking_id.read(['partner_id'])
+        # partner_id = partner_id[0]['partner_id'][0]
         picking_id.action_assign()
-        picking_id.button_validate()
+        # picking_id.button_validate()
+        self.picking_ids = [(4, picking_id.id)]
 
     def prepare_picking_vals(self):
         picking_type_id = self.env['stock.picking.type'].search([('code', '=', 'outgoing')], limit=1)
@@ -48,6 +59,10 @@ class HmsPrescription(models.Model):
     def prepare_move_vals(self, picking_id):
         move_vals = []
         for line in self.prescription_lines:
+            if line.move_ids:
+                continue
+            qty_in_move = sum(line.move_ids.mapped('product_uom_qty'))
+            to_deliver = line.quantity - qty_in_move
             vals = {
                 'picking_type_id': picking_id.picking_type_id.id,
                 'location_id': picking_id.location_id.id,
@@ -55,7 +70,8 @@ class HmsPrescription(models.Model):
                 'picking_id': picking_id.id,
                 'product_id': line.product_id.id,
                 'name': line.product_id.display_name,
-                'product_uom_qty': line.quantity,
+                'product_uom_qty': to_deliver,
+                'prescription_line_id': line.id,
             }
             move_vals.append(vals)
         return move_vals
@@ -121,6 +137,7 @@ class PrescriptionLine(models.Model):
     quantity = fields.Integer(string="Quantity", required=True)
     price_unit = fields.Float(string="Price Unit", required=True)
     total = fields.Float(string="Total", compute="_compute_total", store=True)
+    move_ids = fields.One2many("stock.move", "prescription_line_id", string="Stock Moves")
 
     @api.onchange('product_id')
     def onchange_product_id(self):
@@ -130,3 +147,10 @@ class PrescriptionLine(models.Model):
     def _compute_total(self):
         for rec in self:
             rec.total = rec.quantity * rec.price_unit
+
+    @api.constrains('quantity')
+    def check_quantity(self):
+        for rec in self:
+           qty_in_move = sum(rec.move_ids.mapped('product_uom_qty'))
+           if rec.quantity < qty_in_move:
+                raise ValidationError("Quantity in prescription cannot be less than quantity in stock move.")

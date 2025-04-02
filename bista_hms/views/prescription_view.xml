@@ -15,10 +15,11 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="patient_id"/>
+                            <field name="patient_id" context="{'search_mobile': 1}"/>
                             <field name="date"/>
                             <field name="total_amount"/>
-                            <field name="invoice_ids" />
+                            <field name="invoice_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="picking_ids" widget="many2many_tags" readonly="1"/>
                         </group>
                     </group>
                     <notebook>

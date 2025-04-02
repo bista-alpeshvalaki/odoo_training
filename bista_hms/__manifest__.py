@@ -6,6 +6,7 @@
     "version": "18.0",
     "depends": ['base', 'product', 'sale', 'sale_stock', 'account'],
     "data": [
+        'security/security.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence.xml',
         'data/ir_cron.xml',

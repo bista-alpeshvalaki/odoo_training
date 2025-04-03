@@ -10,6 +10,7 @@
         'security/ir.model.access.csv',
         'data/ir_sequence.xml',
         'data/ir_cron.xml',
+        'data/email_template.xml',
         'views/res_patient_view.xml',
         'views/appointment_view.xml',
         'views/prescription_view.xml',
@@ -17,4 +18,6 @@
         'views/stock_picking_view.xml',
         'views/account_move_view.xml',
     ],
+
+    'pre_init_hook': 'update_record_rule'
 }

@@ -9,6 +9,8 @@
                 <header>
                     <button name="action_confirm" string="Confirm" type="object"
                             invisible="state != 'draft'" class="btn-primary"/>
+                    <button name="action_send_email" string="Send Email" type="object"
+                            invisible="state != 'confirm'" class="btn-primary"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
                 </header>
                 <sheet>

@@ -28,6 +28,9 @@ class HmsAppointment(models.Model):
     def create(self, vals_list):
         return super().create(vals_list)
 
+    def action_send_email(self):
+        template_id = self.env.ref('bista_hms.email_template_appointment_confirmation')
+        template_id.send_mail(self.id, force_send=True)
 
     def _send_appointment_reminder_today(self):
         # Send appointment reminder to patients

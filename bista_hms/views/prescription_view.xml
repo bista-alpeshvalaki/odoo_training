@@ -29,7 +29,7 @@
                                     <field name="product_id"
                                            domain="['|',('type', '!=', 'service'),('list_price', '&gt;=', 100)]"/>
                                     <field name="price_unit"/>
-                                    <field name="quantity"/>
+                                    <field name="quantity" readonly="parent.state == 'confirm'"/>
                                     <field name="total"/>
                                 </list>
                             </field>

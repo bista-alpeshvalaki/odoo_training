@@ -17,6 +17,8 @@
         'views/sale_order_view.xml',
         'views/stock_picking_view.xml',
         'views/account_move_view.xml',
+        'views/prescription_report_template.xml',
+        'views/report.xml',
     ],
 
     'pre_init_hook': 'update_record_rule'

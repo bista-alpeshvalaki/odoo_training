@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 BLOOD_GROUP = [('A+', 'A+ve'),
@@ -14,17 +14,20 @@ BLOOD_GROUP = [('A+', 'A+ve'),
 class ResPatient(models.Model):
     _name = "res.patient"
     _description = "Patient"
+    _inherits = {'res.partner': 'partner_id'}
+
+    partner_id = fields.Many2one("res.partner", string="Partner", required=True, ondelete="restrict", auto_join=True, index=True)
 
     patient_code = fields.Char(string="Patient ID")
-    name = fields.Char(string="Name", required=True)
+    name = fields.Char(related='partner_id.name', inherited=True, string="Name", required=True)
     blood_group = fields.Selection(BLOOD_GROUP,
                                    string="Blood Group",  required=True)
     date_of_birth = fields.Date(string="Date of Birth", required=True)
     age = fields.Char(string="Age")
     previous_diseases = fields.Text(string="Previous Diseases")
-    phone = fields.Char(string="Phone", copy=False)
-    email = fields.Char(string="Email")
-    mobile = fields.Char(string="Mobile", copy=False)
+    phone = fields.Char(related='partner_id.phone', string="Phone", inherited=True, copy=False)
+    email = fields.Char(related='partner_id.email' ,string="Email", inherited=True,)
+    mobile = fields.Char(related='partner_id.mobile', string="Mobile", inherited=True, copy=False)
     appointment_count = fields.Integer(compute="_compute_appointment_count", string="Appointment Count", store=True)
     appointment_ids = fields.One2many("hms.appointment", "patient_id", string="Appointments", copy=False)
     is_blocked = fields.Boolean(string="Blocked")
@@ -58,6 +61,10 @@ class ResPatient(models.Model):
                 else:
                     rec.display_name = rec.name
 
+
+        self._context.get('active_id')
+        self._context.get('active_ids')
+
     def create_prescription(self):
         vals = {'patient_id': self.id,
                 'date': fields.Datetime.now()}
@@ -90,7 +97,7 @@ class ResPatient(models.Model):
             if record.phone:
                 patient_ids = self.env['res.patient'].search_count([('phone', '=', record.phone),('id', '!=', record.id)])
                 if patient_ids:
-                    raise UserError("Phone number already exists")
+                    raise UserError(_("Phone number already exists!"))
 
     def action_open_appointments(self):
         # action = self.env['ir.actions.actions']._for_xml_id('bista_hms.hms_appointment_form_action')
@@ -141,7 +148,6 @@ class ResPatient(models.Model):
         patient_ids = self.env['res.patient'].browse(active_ids)
         patient_ids.write({'phone': False})
         # patient_ids.phone = False
-
 
     def action_prescription(self):
         form_view_id = self.env.ref('bista_hms.hms_prescription_form_view').id

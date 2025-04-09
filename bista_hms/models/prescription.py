@@ -1,11 +1,16 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
+import pytz
 
 class HmsPrescription(models.Model):
     _name = "hms.prescription"
+    _inherit = ["mail.thread", 'mail.activity.mixin']
 
-    patient_id = fields.Many2one("res.patient", string="Patient", required=True, ondelete="restrict")
-    date = fields.Date(string="Date", required=True)
+    patient_id = fields.Many2one("res.patient", string="Patient",
+                                 required=True, ondelete="restrict", tracking=1)
+    date = fields.Date(string="Date", required=True, tracking=10)
+    test_date = fields.Datetime(string="Test Date", tracking=10)
     state = fields.Selection([('draft', 'Draft'),
                               ('confirm', 'Confirm'),
                               ('cancel', 'Cancel')],
@@ -15,6 +20,29 @@ class HmsPrescription(models.Model):
     total_amount = fields.Float(compute='_compute_total_amount', string="Total Amount")
     invoice_ids = fields.Many2many("account.move", string="Invoices")
     picking_ids = fields.Many2many("stock.picking", string="Pickings")
+
+    def get_test_date(self):
+        utc_time = self.test_date
+        utc = pytz.utc
+        local = self.env.user.tz
+        local_tz = pytz.timezone(local)
+        formated_time = utc.localize(utc_time).astimezone(local_tz)
+        formated_str = fields.Datetime.to_string(formated_time)
+        return formated_time
+
+
+    def write(self, vals):
+        res = super().write(vals)
+        if vals.get('state') == 'confirm':
+            self.message_post(body="Prescription Confirmed")
+        return res
+
+    def action_print(self):
+        template_id = self.env.ref('bista_hms.action_prescription_reprot')
+        return template_id.report_action(self)
+
+    def action_confirm(self):
+        self.state = 'confirm'
 
     @api.model
     def default_get(self, fields_list):

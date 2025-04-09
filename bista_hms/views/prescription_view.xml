@@ -10,6 +10,10 @@
                            class="btn-primary"/>
                     <button name="action_create_delivery" type="object" string="Create Delivery"
                            class="btn-primary"/>
+                    <button name="action_print" type="object" string="Print"
+                           class="btn-primary"/>
+                    <button name="action_confirm" type="object" string="Confirm"
+                           class="btn-primary"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
                 </header>
                 <sheet>
@@ -17,6 +21,7 @@
                         <group>
                             <field name="patient_id" context="{'search_mobile': 1}"/>
                             <field name="date"/>
+                            <field name="test_date"/>
                             <field name="total_amount"/>
                             <field name="invoice_ids" widget="many2many_tags" options="{'no_create': True}"/>
                             <field name="picking_ids" widget="many2many_tags" readonly="1"/>
@@ -36,6 +41,7 @@
                         </page>
                     </notebook>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from . import models
-
+from . import wizard
 
 def update_record_rule(env):
     print("Updating record rule====================")
